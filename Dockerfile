@@ -15,8 +15,10 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 RUN composer install --optimize-autoloader --no-dev
 RUN npm install
 RUN npm run build
+RUN cp .env.example .env
 RUN php artisan key:generate
 RUN php artisan migrate --force
 RUN php artisan config:cache
+
 
 CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8080"]
