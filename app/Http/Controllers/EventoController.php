@@ -136,32 +136,25 @@ class EventoController extends Controller
         
 
             // 3) Distancia REAL (Haversine)
-                $ev->distancia = null;
+            $ev->distancia = null;
 
-                if ($latUsuario && $lngUsuario) {
+            if ($latUsuario && $lngUsuario) {
 
-                    // Convertir todo a float para evitar errores en PHP 8.2
-                    $latU = floatval($latUsuario);
-                    $lngU = floatval($lngUsuario);
-                    $latE = floatval($ev->latitud);
-                    $lngE = floatval($ev->longitud);
+                $theta = $lngUsuario - $ev->longitud;
 
-                    $theta = $lngU - $lngE;
+                $dist = sin(deg2rad($latUsuario)) * sin(deg2rad($ev->latitud)) +
+                        cos(deg2rad($latUsuario)) * cos(deg2rad($ev->latitud)) *
+                        cos(deg2rad($theta));
 
-                    $dist = sin(deg2rad($latU)) * sin(deg2rad($latE)) +
-                            cos(deg2rad($latU)) * cos(deg2rad($latE)) *
-                            cos(deg2rad($theta));
+                $dist = acos($dist);// pasa de cos(ángulo) a ángulo (en radianes)                      
+                $dist = rad2deg($dist);// convierte ese ángulo a grados
+                $km = $dist * 60 * 1.1515 * 1.609344;
 
-                    $dist = acos($dist);                 // radianes                          
-                    $dist = rad2deg($dist);              // grados
-                    $km = $dist * 60 * 1.1515 * 1.609344;
+                $ev->distancia = round($km, 3);
 
-                    $ev->distancia = round($km, 3);
-
-                    if ($km < 1) $score += 20;
-                    elseif ($km < 3) $score += 10;
-}
-
+                if ($km < 1) $score += 20;
+                elseif ($km < 3) $score += 10;
+            }
 
             $ev->relevancia = $score;
         }
