@@ -1,17 +1,12 @@
 #!/usr/bin/env bash
 set -e
 
-echo "Running composer install..."
-composer install --no-dev --optimize-autoloader
+php artisan key:generate --force || true
 
-echo "Caching config..."
-php artisan config:cache
-
-echo "Caching routes..."
-php artisan route:cache
-
-echo "Running migrations..."
 php artisan migrate --force
 
-echo "Fixing permissions..."
+php artisan config:clear
+php artisan config:cache
+php artisan route:cache
+
 chmod -R 775 storage bootstrap/cache || true
