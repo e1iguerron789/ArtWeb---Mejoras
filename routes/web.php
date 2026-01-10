@@ -48,12 +48,12 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // Intereses MULTI-SELECCIÓN
+    
     Route::get('/intereses', [UserInteresesController::class, 'index'])->name('intereses.index');
     Route::get('/intereses/create', [UserInteresesController::class, 'create'])->name('intereses.create');
     Route::post('/intereses', [UserInteresesController::class, 'store'])->name('intereses.store');
 
-    // FALTABAN ESTAS ❗
+    
     Route::get('/intereses/{userIntereses}/edit', [UserInteresesController::class, 'edit'])->name('intereses.edit');
     Route::patch('/intereses/{userIntereses}', [UserInteresesController::class, 'update'])->name('intereses.update');
     Route::delete('/intereses/{userIntereses}', [UserInteresesController::class, 'destroy'])->name('intereses.destroy');

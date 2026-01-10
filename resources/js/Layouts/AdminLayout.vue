@@ -27,7 +27,7 @@ import { Link } from "@inertiajs/vue3";
 
                     
 
-                    <!-- ✔ CERRAR SESIÓN CORRECTO -->
+                    
                     <Link 
                         href="/logout"
                         method="post"
@@ -41,7 +41,7 @@ import { Link } from "@inertiajs/vue3";
             </div>
         </nav>
 
-        <!-- CONTENIDO -->
+        // CONTENIDO 
         <main
             class="max-w-5xl mx-auto mt-12 p-8 bg-[#F5F5DC] border border-[#D4AF37]
                    shadow-lg rounded-lg text-[#0B132B]"
