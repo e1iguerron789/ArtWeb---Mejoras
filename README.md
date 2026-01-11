@@ -7,131 +7,122 @@
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
 
+ ArtWeb – Sistema de Recomendación de Eventos
 
-#Artweb
+Aplicación Web desarrollada con Laravel + Inertia + Vue
 
-Artweb es una aplicación web desarrollada con Laravel 10 (backend) y Vue 3 + Inertia.js (frontend). Implementa autenticación, roles, un panel de usuario, un panel administrativo, validaciones en el servidor y un sistema completo de CRUD basado en MVC. Este proyecto constituye la base inicial para una futura plataforma artística con mayores funcionalidades.
+Integrantes
 
-#Video demostrativo
+- Elizabeth Guerrón
 
-https://youtu.be/ZB-MVubuQiY
+- Jean Luc Morales
 
-#Descripción del proyecto
+Link del video:
 
-El objetivo principal del proyecto es implementar un sistema funcional que utilice el patrón MVC, autenticación con roles y un manejo adecuado de datos sensibles en el Back-End.
-Dentro de los requerimientos académicos solicitados se incluyó:
 
---  Validar datos sensibles directamente en el servidor, no solo con JavaScript.
-     En este proyecto se valida de forma estricta que:
+Descripción general del proyecto
 
--- La edad ingresada sea válida.
+ArtWeb es una aplicación web que permite a los usuarios visualizar eventos culturales en un mapa interactivo. El sistema recomienda eventos de acuerdo con los intereses del usuario y su ubicación geográfica, asignando un nivel de relevancia a cada evento para mostrar primero aquellos que resultan más adecuados para el usuario.
 
--- El correo electrónico sea único antes de almacenarlo en la base de datos.
+El proyecto fue desarrollado con Laravel en el backend, Inertia.js como puente y Vue.js en el frontend. Como parte del taller formativo, se aplicaron principios SOLID y patrones de diseño para mejorar la estructura, mantenibilidad y escalabilidad del código.
 
--- Esto evita ingreso incorrecto o manipulación desde el Front-End.
+Funcionalidades principales:
 
-Cuando existe una relación entre tablas, no se debe permitir ingresar manualmente el ID de la relación, sino seleccionar mediante dropdown dinámico.
-Por ejemplo, las opciones de interés dependen de una categoría.
-El usuario administrador primero selecciona una categoría, y automáticamente se cargan las opciones relacionadas para evitar errores y garantizar integridad de datos.
+- Autenticación de usuarios.
 
-El sistema también separa  el acceso del administrador del de un usuario normal:
-un administrador nunca accede al dashboard normal, sino a su panel administrativo personalizado.
+- Gestión de intereses del usuario.
 
-#Tecnologías utilizadas
+- Creación y visualización de eventos.
 
--- Laravel 10
+- Mapa interactivo con eventos geolocalizados.
 
--- Vue 3
+- Sistema de recomendación que asigna relevancia a los eventos según:
 
--- Inertia.js
+- Intereses del usuario.
 
--- Laravel Breeze
+- Coincidencia exacta de categorías.
 
--- Tailwind CSS
+- Coincidencia por nombre de interés.
 
--- MySQL / MariaDB
+- Distancia entre el usuario y el evento.
 
--- Patrón MVC (Model–View–Controller)
+PROBLEMAS EN EL SISTEMA:
 
-#Modelos implementados
+Inicialmente, la lógica de recomendación se encontraba directamente en el controlador EventoController.
+El EventoController se encargaba de:
 
-Se utilizaron modelos de Laravel para representar las entidades principales del sistema:
+- Consultar los eventos desde la base de datos.
 
--- User
+- Calcular la distancia entre el usuario y cada evento.
 
-Contiene información básica del usuario.
+- Comparar intereses.
 
-Incluye campo rol para distinguir entre usuario normal y administrador.
+- Calcular el puntaje de relevancia.
 
-Validación back-end:
+- Ordenar los resultados.
 
-El correo debe ser único (unique:users,email).
+Esto provocaba que el controlador tuviera demasiadas responsabilidades, volviéndolo difícil de mantener, poco reutilizable y propenso a errores cuando se requerían cambios en la lógica.
 
-Restricciones estándar de Laravel Breeze.
 
--- CategoriaInteres
+PRINCIPIOS SOLID IMPLEMENTADOS:
 
-Representa las categorías principales (por ejemplo: Pintura, Música, Escultura).
+1. Single Responsibility Principle (SRP)
 
-Relación:
+El principio de Responsabilidad Única establece que una clase debe encargarse de una sola tarea y tener una única razón para cambiar. En el proyecto, este principio se aplicó separando claramente las funciones del sistema: el EventoController se encarga únicamente de manejar las peticiones HTTP y, específicamente en el método actualizarMapa(), solo recibe los datos del usuario y devuelve la respuesta sin realizar cálculos complejos; la clase UserContext tiene como única responsabilidad transportar la información del usuario, como intereses y ubicación, sin contener ninguna lógica de negocio; el EventoRepository se encarga exclusivamente de obtener los eventos desde la base de datos; el EventoRecomendadorService coordina el proceso de cálculo de relevancia de los eventos; y finalmente, las clases de reglas (ReglaDistancia, ReglaInteresExacto y ReglaNombreInteres) se encargan cada una de calcular el puntaje según un criterio específico. Esta separación evita la creación de clases grandes y desordenadas, facilitando el mantenimiento del sistema y mejorando la comprensión del código.
 
-Una categoría tiene muchas opciones de interés (hasMany).
+2. Dependency Inversion Principle (DIP)
 
--- OpcionInteres
+Principio:
+Las clases de alto nivel no deben depender de implementaciones concretas, sino de abstracciones.
 
-Representa opciones más específicas dentro de una categoría.
+Aplicación en el proyecto:
 
-Relación:
+Se creó la interfaz ReglaRelevancia.
 
-Pertenece a una categoría (belongsTo).
+Todas las reglas implementan el método:
 
-Se carga dinámicamente en formularios según la categoría seleccionada.
+puntaje(Evento $evento, UserContext $ctx)
 
--- Etiqueta
 
-Modelo simple para etiquetas administrables desde el panel del administrador.
+EventoRecomendadorService no depende de reglas específicas, sino de la interfaz.
 
-UserIntereses
+Problema que soluciona:
+Permite agregar nuevas reglas de recomendación sin modificar la lógica principal del sistema.
 
-Contiene los intereses registrados por cada usuario.
+PATRONES DE DISEÑO IMPLEMENTADOS:
 
--- Validaciones:
+1. Repository Pattern
+ 
+Clase:
+App\Repositories\EventoRepository
 
-La edad debe ser un número válido y positivo.
+El metodo:
+obtenerParaMapa()
 
-Otros campos se validan según las reglas del formulario.
+Se encarga de encapsular las consultas a la base de datos para obtener los eventos necesarios para el mapa.
 
-#Controladores implementados
 
--- UserInteresesController
+Antes las consultas Eloquent estaban directamente en el controlador. Especificamente en EventoController
 
-CRUD completo para que el usuario gestione sus intereses.
 
-Manejo de validaciones y protección de rutas.
+La aplicacion de este patron de diseño logra que el acceso a datos está centralizado, evitando duplicación y facilitando cambios futuros.
 
--- CategoriaInteresController
+2. Strategy Pattern
 
-CRUD para el administrador.
+Regla aplicada en todas:
+ReglaRelevancia
 
-Evita ingreso manual de claves foráneas (solo se seleccionan desde dropdowns).
+Estrategias implementadas:
 
--- OpcionInteresController
+- ReglaInteresExacto
 
-Carga dinámica de opciones según la categoría.
+- ReglaNombreInteres
 
-Validación en Back-End de la relación categoría → opción.
+- ReglaDistancia
 
--- EtiquetaController
+Cada clase implementa su propia forma de calcular el puntaje de relevancia.
 
-CRUD simple para etiquetas.
+Clase que utiliza las estrategias:
+EventoRecomendadorService
 
--- AuthenticatedSessionController
-
-Controla inicio y cierre de sesión.
-
-Redirección basada en rol:
-
-Usuario normal → Dashboard de usuario.
-
-Administrador → Panel administrativo.
-
+Este patron evita un método gigante con múltiples condicionales y permite agregar nuevas reglas sin afectar las existentes.
